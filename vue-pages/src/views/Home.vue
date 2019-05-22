@@ -1,9 +1,30 @@
 <template>
   <div>
-    <div v-for="item in PAGES">
+    <div class="title content">
+      <h1>所有项目 </h1>
+      <el-button type="primary" size='mini' icon="el-icon-folder-add" @click="newProject">新增项目</el-button>
+    </div>
+    <div v-for="(item,index) in pages" v-if="pages.length">
       <div class="content">
-        <h2>{{item.title}}</h2>
-        <project-table :dataSource="item.branchs">
+        <h2 class="title">
+          <div>
+            <!--<template v-if="!item.isEdit">-->
+              <!--{{item.title}}-->
+              <!--<i class="el-icon-edit icon" @click="editProjectTitle(item,index)"></i>-->
+            <!--</template>-->
+            <!--<template v-else>-->
+              <!--<el-input v-model="item.title" placeholder="请输入内容"></el-input>-->
+              <!--<el-button type="primary" size='mini' icon="el-icon-folder-add" @click="editProject(item)">确定</el-button>-->
+            <!--</template>-->
+            {{item.title}}
+            <i class="el-icon-edit icon" @click="editProjectTitle(item,index)"></i>
+          </div>
+          <div>
+            <el-button type="primary" size='mini' icon="el-icon-folder-add" @click="newItem(item)">新增分支</el-button>
+            <!--<el-button type="primary" size='mini' icon="el-icon-folder-add" @click="newProject">新增项目</el-button>-->
+          </div>
+        </h2>
+        <project-table :dataSource="item">
 
         </project-table>
       </div>
@@ -33,51 +54,68 @@
         语言助手</a>
     </div>
 
-    <div class="draw">
-      <div class="bg">
-      </div>
-      <div class="content">
-        content
-      </div>
-    </div>
+    <drawer-page-item></drawer-page-item>
+    <drawer-page></drawer-page>
   </div>
 </template>
 
 <script>
-  import {PAGES} from '../constant';
   import ProjectTable from '@/components/ProjectTable'
+  import DrawerPageItem from '@/components/DrawerPageItem'
+  import DrawerPage from '@/components/DrawerPage'
+  import {mapActions, mapGetters, mapMutations} from 'vuex';
 
   export default {
     name: "Home",
-    components: {ProjectTable},
+    components: {ProjectTable, DrawerPageItem, DrawerPage},
     data() {
       return {
         drawVisiable: false,
         current: {},
       }
     },
-    computed: {
-      PAGES() {
-        let pages;
-        if (!window.localStorage.getItem('pages')) {
-          window.localStorage.setItem('pages', JSON.stringify(PAGES));
-        } else {
-          pages = window.localStorage.getItem('pages');
-        }
-        return JSON.parse(pages);
-      }
+    async mounted() {
+      this.getPages();
     },
-    methods: {}
+    computed: {
+      ...mapGetters({
+        pages: 'pages',
+      }),
+    },
+    methods: {
+      ...mapActions({
+        getPages: 'getPages',
+        editPageItem: 'editPageItem',
+        newProject: 'newProject',
+        newItem: 'newItem',
+        editProject:'editProject',
+      }),
+      ...mapMutations({
+        saveShowEditDialog: 'saveShowEditDialog',
+        saveShowEditProjectDialog: 'saveShowEditProjectDialog',
+        saveCurrentProjectItem: 'saveCurrentProjectItem',
+        savePages: 'savePages',
+      }),
+      editProjectTitle(item, index) {
+        // savePages
+       this.newProject({
+         title:item.title,
+         id:item._id
+       });
+      }
+    }
   }
 </script>
 
 <style scoped lang="scss">
-  .draw {
-    .bg {
-
-    }
-    .content {
-
+  .title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    .el-icon-edit {
+      font-size: 18px;
+      margin: 0 6px;
+      cursor: pointer;
     }
   }
 
@@ -94,5 +132,6 @@
   div.content a span {
     margin-left: 10px;
   }
+
 
 </style>
